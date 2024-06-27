@@ -5,7 +5,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'Lingaiah@60',
-    database: 'team_database',
+    database: 'SOFTWARE_ENGG',
 });
 
 ////spoorthi db
