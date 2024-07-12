@@ -7,22 +7,21 @@ const upload = multer({ dest: 'uploads/' });
 
 // Function to convert Excel serial date to JavaScript Date
 const excelDateToJSDate = (serial) => {
-    const utcDays = Math.floor(serial - 25569);
-    const utcValue = utcDays * 86400;
-    const dateInfo = new Date(0); // Start with epoch
-    dateInfo.setUTCSeconds(utcValue);
-
-    return dateInfo;
+    if (typeof serial === 'number') {
+        const utcDays = Math.floor(serial - 25569);
+        const utcValue = utcDays * 86400;
+        const dateInfo = new Date(0); // Start with epoch
+        dateInfo.setUTCSeconds(utcValue);
+        return dateInfo;
+    } else {
+        throw new Error('Invalid date format');
+    }
 };
 
-// Function to parse date string in DD-MMM-YYYY format
+// Function to parse date string in DD/MM/YYYY format
 const parseDateString = (dateStr) => {
-    const [day, month, year] = dateStr.split('-').map(part => part.trim());
-    const months = {
-        Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
-        Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12'
-    };
-    return new Date(`${year}-${months[month]}-${day}`);
+    const [day, month, year] = dateStr.split('/').map(part => part.trim());
+    return new Date(`${year}-${month}-${day}`);
 };
 
 // Function to check if a date is valid
@@ -46,6 +45,7 @@ const uploadAndInsertData = (req, res) => {
         const studentSheet = workbook.Sheets[studentSheetName];
         const studentData = xlsx.utils.sheet_to_json(studentSheet);
 
+        // Process each row of student data
         studentData.forEach((row) => {
             try {
                 const {
@@ -53,7 +53,7 @@ const uploadAndInsertData = (req, res) => {
                     'Personal Email ID': personalEmail,
                     'Name': name,
                     'USN': usn,
-                    'Branch': branch,
+                    'Branch': department,
                     'Gender': gender,
                     'Date of Birth (DD/MM/YYYY)': dateOfBirth,
                     'Mobile': mobile,
@@ -64,10 +64,10 @@ const uploadAndInsertData = (req, res) => {
                     'History of Backlogs (YES/NO)': historyOfBacklogs,
                 } = row;
 
+                // Parse date of birth
                 let dob;
                 if (typeof dateOfBirth === 'string') {
-                    const [day, month, year] = dateOfBirth.split('/');
-                    dob = new Date(`${year}-${month}-${day}`); // Parse date string
+                    dob = parseDateString(dateOfBirth); // Parse date string
                 } else if (typeof dateOfBirth === 'number') {
                     dob = excelDateToJSDate(dateOfBirth); // Convert Excel serial date
                 } else {
@@ -77,24 +77,43 @@ const uploadAndInsertData = (req, res) => {
                 // Format date to YYYY-MM-DD format
                 dob = dob.toISOString().split('T')[0];
 
+                // Prepare SQL query
                 const query = `
-                    INSERT INTO Students (college_email, personal_email, name, usn, branch, gender, date_of_birth, mobile, percentage_10th, percentage_12th, be_cgpa, backlogs, history_of_backlogs)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO student (USN, Name, Department, Gender, Date_of_Birth, Email, Secondary_Email, Phone_Number, 10th_Percentage, 12th_Diploma_Percentage, BE_CGPA, Active_Backlogs, History_of_Backlogs, Eligibility_for_Placements)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Eligible')
                     ON DUPLICATE KEY UPDATE
-                        personal_email = VALUES(personal_email),
-                        name = VALUES(name),
-                        branch = VALUES(branch),
-                        gender = VALUES(gender),
-                        date_of_birth = VALUES(date_of_birth),
-                        mobile = VALUES(mobile),
-                        percentage_10th = VALUES(percentage_10th),
-                        percentage_12th = VALUES(percentage_12th),
-                        be_cgpa = VALUES(be_cgpa),
-                        backlogs = VALUES(backlogs),
-                        history_of_backlogs = VALUES(history_of_backlogs)
+                        Name = VALUES(Name),
+                        Department = VALUES(Department),
+                        Gender = VALUES(Gender),
+                        Date_of_Birth = VALUES(Date_of_Birth),
+                        Email = VALUES(Email),
+                        Secondary_Email = VALUES(Secondary_Email),
+                        Phone_Number = VALUES(Phone_Number),
+                        10th_Percentage = VALUES(10th_Percentage),
+                        12th_Diploma_Percentage = VALUES(12th_Diploma_Percentage),
+                        BE_CGPA = VALUES(BE_CGPA),
+                        Active_Backlogs = VALUES(Active_Backlogs),
+                        History_of_Backlogs = VALUES(History_of_Backlogs),
+                        Eligibility_for_Placements = VALUES(Eligibility_for_Placements);
                 `;
 
-                const values = [collegeEmail, personalEmail, name, usn, branch, gender, dob, mobile, percentage_10th, percentage_12th, be_cgpa, backlogs, historyOfBacklogs];
+                const values = [
+                    usn,
+                    name,
+                    department,
+                    gender,
+                    dob,
+                    collegeEmail,
+                    personalEmail,
+                    mobile,
+                    percentage_10th,
+                    percentage_12th,
+                    be_cgpa,
+                    backlogs,
+                    historyOfBacklogs === 'YES' ? 1 : 0 // Convert 'YES'/'NO' to 1/0
+                ];
+
+                // Execute the query
                 db.query(query, values, (err, result) => {
                     if (err) {
                         console.error('Error inserting student data:', err);
@@ -106,95 +125,7 @@ const uploadAndInsertData = (req, res) => {
             }
         });
 
-        // Process the "Internship" sheet
-        const internshipSheetName = 'Internship';
-        const internshipSheet = workbook.Sheets[internshipSheetName];
-        const internshipData = xlsx.utils.sheet_to_json(internshipSheet);
-
-        internshipData.forEach((row) => {
-            // Skip rows that do not contain valid data
-            if (!row['__EMPTY'] || row['R V COLLEGE OF ENGINEERING'] === 'Sl no.' || 
-                (typeof row['R V COLLEGE OF ENGINEERING'] === 'string' && row['R V COLLEGE OF ENGINEERING'].includes('PLACEMENTS DETAILS'))) {
-                return;
-            }
-
-            try {
-                const usn = row['__EMPTY'];
-                const name = row['__EMPTY_1'];
-                const department = row['__EMPTY_2'];
-                const company = row['__EMPTY_3'];
-                const dateOfOffer = row['__EMPTY_4'];
-                const stipend = row['__EMPTY_5'];
-                const status = row['__EMPTY_6'];
-                const startDate = row['__EMPTY_7'];
-                const offerType = row['__EMPTY_8'];
-
-                let offerDate, start;
-
-                if (dateOfOffer === undefined) {
-                    console.error('Date of Offer is undefined for row:', row);
-                    throw new Error('Invalid date format for Date of Offer');
-                } else if (typeof dateOfOffer === 'string') {
-                    offerDate = parseDateString(dateOfOffer);
-                } else if (typeof dateOfOffer === 'number') {
-                    offerDate = excelDateToJSDate(dateOfOffer);
-                } else {
-                    console.error('Invalid date format for Date of Offer:', dateOfOffer);
-                    throw new Error('Invalid date format for Date of Offer');
-                }
-
-                if (startDate === undefined) {
-                    console.error('Start Date is undefined for row:', row);
-                    throw new Error('Invalid date format for Start Date');
-                } else if (typeof startDate === 'string') {
-                    start = parseDateString(startDate);
-                } else if (typeof startDate === 'number') {
-                    start = excelDateToJSDate(startDate);
-                } else {
-                    console.error('Invalid date format for Start Date:', startDate);
-                    throw new Error('Invalid date format for Start Date');
-                }
-
-                // Check if dates are valid
-                if (!isValidDate(offerDate)) {
-                    console.error('Invalid date value for Date of Offer:', offerDate);
-                    throw new Error('Invalid date value for Date of Offer');
-                }
-
-                if (!isValidDate(start)) {
-                    console.error('Invalid date value for Start Date:', start);
-                    throw new Error('Invalid date value for Start Date');
-                }
-
-                // Format dates to YYYY-MM-DD format
-                offerDate = offerDate.toISOString().split('T')[0];
-                start = start.toISOString().split('T')[0];
-
-                const query = `
-                    INSERT INTO Internship (student_id, company_name, offer_date, stipend, status, start_date, offer_type)
-                    VALUES ((SELECT student_id FROM Students WHERE usn = ?), ?, ?, ?, ?, ?, ?)
-                    ON DUPLICATE KEY UPDATE
-                        company_name = VALUES(company_name),
-                        offer_date = VALUES(offer_date),
-                        stipend = VALUES(stipend),
-                        status = VALUES(status),
-                        start_date = VALUES(start_date),
-                        offer_type = VALUES(offer_type)
-                `;
-
-                const values = [usn, company, offerDate, stipend, status, start, offerType];
-                db.query(query, values, (err, result) => {
-                    if (err) {
-                        console.error('Error inserting internship data:', err);
-                    }
-                });
-            } catch (rowError) {
-                console.error('Error processing internship row:', row);
-                console.error(rowError);
-            }
-        });
-
-        res.send('File uploaded and data inserted.');
+        res.send('File uploaded and data insertion started.');
     } catch (error) {
         console.error('Error processing the file:', error);
         res.status(500).send('Error processing the file.');
