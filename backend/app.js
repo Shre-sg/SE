@@ -6,7 +6,8 @@ const cookieParser = require('cookie-parser');
 
 //module file
 //const testRouter = require('./module/test');
-const { upload, uploadAndInsert } = require('./modules/input');
+const { upload, uploadAndInsertData } = require('./modules/input');
+//const { upload, uploadAndInsertInternship } = require('./modules/input2');
 
 //start up with express
 const app = express();
@@ -31,7 +32,8 @@ app.get('/', (req, res)=> {
 //content.login
 //app.use('/test', testRouter);
 // Endpoint to upload Excel file
-app.post('/upload', upload.single('file'), uploadAndInsert);
+app.post('/upload', upload.single('file'), uploadAndInsertData);
+//app.post('/uploadInternship', upload.single('file'), uploadAndInsertInternship);
 
 //end
 const port = process.env.PORT || 3000;

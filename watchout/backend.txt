@@ -11,3 +11,10 @@ shre_sg@Rog:~/Projects/SE/backend$ npm i express
 shre_sg@Rog:~/Projects/SE/backend$ sudo npm i -g nodemon
 shre_sg@Rog:~/Projects/SE/backend$ npm i mysql
 shre_sg@Rog:~/Projects/SE/backend$ npm i mysql2
+
+
+use SOFTWARE_ENGG;
+SET FOREIGN_KEY_CHECKS = 0;
+TRUNCATE TABLE `Eligibility`;
+TRUNCATE TABLE `Students`;
+SET FOREIGN_KEY_CHECKS = 1;
