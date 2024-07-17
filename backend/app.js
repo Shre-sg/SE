@@ -1,20 +1,24 @@
-//start
 const Joi = require('joi');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
 
-//module file
-//const testRouter = require('./module/test');
+
+const db = require('./modules/db');
 const { upload, uploadAndInsertData } = require('./modules/input');
-//const { upload, uploadAndInsertInternship } = require('./modules/input2');
+const { extractAndInsertInternshipData } = require('./modules/input2');
+const { getAllData } = require('./modules/all');
+const { getDreamOpenDreamCounts } = require('./modules/cato');
+const { getPlacementCTCStats } = require('./modules/ctc');
+const { calculateOfferStatistics } = require('./modules/type');
 
-//start up with express
+
 const app = express();
-app.use(express.json());   //for post-express call
+const port = process.env.PORT || 3000;
+app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
-
 app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -22,19 +26,49 @@ app.use((req, res, next) => {
     next();
 });
 
-//content
-app.get('/', (req, res)=> {
+
+// Default route
+app.get('/', (req, res) => {
     res.send('Hello World');
+});
+app.post('/students/upload', upload.single('file'), (req, res) => {
+    uploadAndInsertData(req, res);
+});
+app.post('/internships/upload', upload.single('file'), (req, res) => {
+    extractAndInsertInternshipData(req.file.path); // Call the function with the file path
+    res.send('Internship data upload started.'); // Respond immediately
+});
+app.get('/all', getAllData);
+app.get('/cato', getDreamOpenDreamCounts);
+app.get('/ctc', async (req, res) => {
+    try {
+        const placementStats = await getPlacementCTCStats();
+
+        console.log('Fetched Placement Stats:', placementStats); // Log fetched stats for debugging
+
+        // Sending JSON response with correct field names
+        res.json({
+            "Count of CTC Values": placementStats["COUNTA of USN"],
+            "Average CTC (in lakhs)": placementStats["AVERAGE of CTC (in lakhs)"],
+            "Median CTC (in lakhs)": placementStats["MEDIAN of CTC (in lakhs)"]
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Error retrieving placement CTC statistics.');
+    }
+});
+app.get('/type', async (req, res) => {
+    try {
+        const statistics = await calculateOfferStatistics();
+        res.json(statistics);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Error fetching offer statistics.');
+    }
 });
 
 
-
-//content.login
-//app.use('/test', testRouter);
-// Endpoint to upload Excel file
-app.post('/upload', upload.single('file'), uploadAndInsertData);
-//app.post('/uploadInternship', upload.single('file'), uploadAndInsertInternship);
-
-//end
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log('Listening to PORT', port));
+// Start the server
+app.listen(port, () => {
+    console.log(`Listening on PORT ${port}`);
+});
