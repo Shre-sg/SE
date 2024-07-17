@@ -1,7 +1,6 @@
 const Joi = require('joi');
 const express = require('express');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 const multer = require('multer');
 
 
@@ -18,13 +17,6 @@ const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
-app.use(cookieParser());
-app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    next();
-});
 
 
 // Default route
