@@ -1,23 +1,24 @@
-const Joi = require('joi');
+
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
+const bodyParser = require('body-parser');
 
-
-const db = require('./modules/db');
 const { upload, uploadAndInsertData } = require('./modules/input');
 const { extractAndInsertInternshipData } = require('./modules/input2');
 const { getAllData } = require('./modules/all');
 const { getDreamOpenDreamCounts } = require('./modules/cato');
 const { getPlacementCTCStats } = require('./modules/ctc');
 const { calculateOfferStatistics } = require('./modules/type');
-
+const { insertStudent } = require('./modules/student');
+const { insertInternship } = require('./modules/internship');
+const { insertPlacement } = require('./modules/placement');
 
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
-
+app.use(bodyParser.json());
 
 // Default route
 app.get('/', (req, res) => {
@@ -58,6 +59,35 @@ app.get('/type', async (req, res) => {
         res.status(500).send('Error fetching offer statistics.');
     }
 });
+app.post('/student', (req, res) => {
+    const studentData = req.body;
+    insertStudent(studentData, (err, results) => {
+        if (err) {
+            return res.status(500).send('Error inserting student data.');
+        }
+        res.send('Student data inserted successfully.');
+    });
+});
+app.post('/internship', (req, res) => {
+    const internshipData = req.body;
+    insertInternship(internshipData, (err, results) => {
+        if (err) {
+            return res.status(500).send('Error inserting internship data.');
+        }
+        res.send('Internship data inserted successfully.');
+    });
+});
+app.post('/placement', (req, res) => {
+    const placementData = req.body;
+    insertPlacement(placementData, (err, results) => {
+        if (err) {
+            return res.status(500).send('Error inserting placement data.');
+        }
+        res.send('Placement data inserted successfully.');
+    });
+});
+
+
 
 
 // Start the server
