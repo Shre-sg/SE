@@ -4,6 +4,7 @@ const cors = require('cors');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 
+
 const { upload, uploadAndInsertData } = require('./modules/input');
 const { extractAndInsertInternshipData } = require('./modules/input2');
 const { getAllData } = require('./modules/all');
@@ -14,11 +15,13 @@ const { insertStudent } = require('./modules/student');
 const { insertInternship } = require('./modules/internship');
 const { insertPlacement } = require('./modules/placement');
 
+
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+
 
 // Default route
 app.get('/', (req, res) => {
