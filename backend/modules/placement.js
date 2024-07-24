@@ -24,6 +24,18 @@ const insertPlacement = (placementData, callback) => {
     });
 };
 
+const getAllPlacements = (callback) => {
+    const query = 'SELECT * FROM placement';
+
+    db.query(query, (err, results) => {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, results);
+    });
+};
+
 module.exports = {
     insertPlacement,
+    getAllPlacements,
 };

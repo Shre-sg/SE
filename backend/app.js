@@ -11,9 +11,9 @@ const { getAllData } = require('./modules/all');
 const { getDreamOpenDreamCounts } = require('./modules/cato');
 const { getPlacementCTCStats } = require('./modules/ctc');
 const { calculateOfferStatistics } = require('./modules/type');
-const { insertStudent } = require('./modules/student');
-const { insertInternship } = require('./modules/internship');
-const { insertPlacement } = require('./modules/placement');
+const { insertStudent, getAllStudents } = require('./modules/student');
+const { insertInternship, getAllInternships } = require('./modules/internship');
+const { insertPlacement, getAllPlacements } = require('./modules/placement');
 
 
 const app = express();
@@ -71,6 +71,15 @@ app.post('/student', (req, res) => {
         res.send('Student data inserted successfully.');
     });
 });
+app.get('/student', (req, res) => {
+    getAllStudents((err, results) => {
+        if (err) {
+            return res.status(500).send('Error retrieving student data.');
+        }
+        res.status(200).json(results);
+    });
+});
+
 app.post('/internship', (req, res) => {
     const internshipData = req.body;
     insertInternship(internshipData, (err, results) => {
@@ -80,6 +89,15 @@ app.post('/internship', (req, res) => {
         res.send('Internship data inserted successfully.');
     });
 });
+app.get('/internship', (req, res) => {
+    getAllInternships((err, results) => {
+        if (err) {
+            return res.status(500).send('Error retrieving internship data.');
+        }
+        res.status(200).json(results);
+    });
+});
+
 app.post('/placement', (req, res) => {
     const placementData = req.body;
     insertPlacement(placementData, (err, results) => {
@@ -89,6 +107,15 @@ app.post('/placement', (req, res) => {
         res.send('Placement data inserted successfully.');
     });
 });
+app.get('/placement', (req, res) => {
+    getAllPlacements((err, results) => {
+        if (err) {
+            return res.status(500).send('Error retrieving placement data.');
+        }
+        res.status(200).json(results);
+    });
+});
+
 
 
 
