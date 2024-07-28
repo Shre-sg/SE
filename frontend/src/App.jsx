@@ -5,6 +5,7 @@ import Placement from './components/Placement';
 import Student from './components/Student';
 import Internship from './components/Internship';
 import AllData from './components/All';
+import View from './components/View'
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/student" element={<Student />} />
         <Route path="/internship" element={<Internship />} />
         <Route path="/all" element={<AllData />} />
+        <Route path="/view" element={<View />} />
 
         </Routes>
       </div>

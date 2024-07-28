@@ -14,6 +14,7 @@ const { calculateOfferStatistics } = require('./modules/type');
 const { insertStudent, getAllStudents } = require('./modules/student');
 const { insertInternship, getAllInternships } = require('./modules/internship');
 const { insertPlacement, getAllPlacements } = require('./modules/placement');
+const { getOnOffCampusCounts } = require('./modules/campus');
 
 
 const app = express();
@@ -38,21 +39,15 @@ app.get('/all', getAllData);
 app.get('/cato', getDreamOpenDreamCounts);
 app.get('/ctc', async (req, res) => {
     try {
-        const placementStats = await getPlacementCTCStats();
-
-        console.log('Fetched Placement Stats:', placementStats); // Log fetched stats for debugging
-
-        // Sending JSON response with correct field names
-        res.json({
-            "Count of CTC Values": placementStats["COUNTA of USN"],
-            "Average CTC (in lakhs)": placementStats["AVERAGE of CTC (in lakhs)"],
-            "Median CTC (in lakhs)": placementStats["MEDIAN of CTC (in lakhs)"]
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).send('Error retrieving placement CTC statistics.');
+        const stats = await getPlacementCTCStats();
+        console.log('Fetched Placement Stats:', stats); // Log for debugging
+        res.json(stats);
+    } catch (err) {
+        console.error('Error fetching CTC stats:', err);
+        res.status(500).json({ error: 'An error occurred while fetching CTC statistics' });
     }
 });
+
 app.get('/type', async (req, res) => {
     try {
         const statistics = await calculateOfferStatistics();
@@ -62,6 +57,7 @@ app.get('/type', async (req, res) => {
         res.status(500).send('Error fetching offer statistics.');
     }
 });
+app.get('/campus', getOnOffCampusCounts);
 app.post('/student', (req, res) => {
     const studentData = req.body;
     insertStudent(studentData, (err, results) => {
