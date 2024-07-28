@@ -3,6 +3,8 @@ import axios from 'axios';
 import 'bootswatch/dist/lux/bootstrap.min.css'; // Import Bootswatch Lux theme
 import { Pie, Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
+import image1 from '../assets/rvce.logo.png';
+import image2 from '../assets/rvce.write.png';
 
 const View = () => {
     const [campusData, setCampusData] = useState(null);
@@ -105,8 +107,15 @@ const View = () => {
     };
 
     return (
-        <div className="container">
-            <h2>On Campus vs Off Campus</h2>
+        <div className="container mt-5">
+            <div style={{ position: 'absolute', top: '15px', left: '15px', margin: '10px' }}>
+                <img src={image1} alt="RVCE Logo" style={{ width: '130px' }} />
+            </div>
+            {/* Add the right logo */}
+            <div style={{ position: 'absolute', top: '10px', right: '15px', margin: '10px' }}>
+                <img src={image2} alt="RVCE" style={{ width: '300px' }} />
+            </div>
+            <h2 style={{ marginTop: '200px' }}>Placement Data <br></br>On Campus vs Off Campus</h2>
             {campusData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -139,7 +148,7 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <h2>CTC Statistics</h2>
+            <h2 style={{ marginTop: '40px' }}>CTC Statistics</h2>
             {ctcData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -172,7 +181,7 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <h2>Offer Type Counts</h2>
+            <h2 style={{ marginTop: '40px' }}>Offer Type Counts</h2>
             {typeData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -213,7 +222,7 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <h2>Category Counts</h2>
+            <h2 style={{ marginTop: '40px' }}>Category Counts</h2>
             {categoryData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
