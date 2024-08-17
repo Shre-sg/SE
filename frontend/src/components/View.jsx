@@ -301,7 +301,7 @@ const View = () => {
 
             <div className="d-flex justify-content-between mb-4" style={{ marginTop: '40px' }}>
                 <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-                <button className="btn btn-secondary" onClick={() => navigate('/all')}>Data Page</button>
+                <button className="btn btn-primary" onClick={() => navigate('/all')}>Data Page</button>
             </div>
         </div>
     );
