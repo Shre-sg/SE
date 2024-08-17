@@ -1,10 +1,14 @@
-
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const bodyParser = require('body-parser');
+const session = require('express-session');
+const path = require('path');
 
-
+// Import route handlers
+const loginRoutes = require('./modules/login');
+const registerRouter = require('./modules/register');
+const logoutRouter = require('./modules/logout');
 const { upload, uploadAndInsertData } = require('./modules/input');
 const { extractAndInsertInternshipData } = require('./modules/input2');
 const { getAllData } = require('./modules/all');
@@ -16,27 +20,36 @@ const { insertInternship, getAllInternships } = require('./modules/internship');
 const { insertPlacement, getAllPlacements } = require('./modules/placement');
 const { getOnOffCampusCounts } = require('./modules/campus');
 
-
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Middleware setup
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+app.use(session({
+    secret: 'wasssssuppp',
+    resave: false,
+    saveUninitialized: false,
+}));
 
-
-// Default route
+// Route handlers
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
+
 app.post('/students/upload', upload.single('file'), (req, res) => {
     uploadAndInsertData(req, res);
 });
+
 app.post('/internships/upload', upload.single('file'), (req, res) => {
     extractAndInsertInternshipData(req.file.path); // Call the function with the file path
     res.send('Internship data upload started.'); // Respond immediately
 });
+
 app.get('/all', getAllData);
 app.get('/cato', getDreamOpenDreamCounts);
+
 app.get('/ctc', async (req, res) => {
     try {
         const stats = await getPlacementCTCStats();
@@ -57,7 +70,9 @@ app.get('/type', async (req, res) => {
         res.status(500).send('Error fetching offer statistics.');
     }
 });
+
 app.get('/campus', getOnOffCampusCounts);
+
 app.post('/student', (req, res) => {
     const studentData = req.body;
     insertStudent(studentData, (err, results) => {
@@ -67,6 +82,7 @@ app.post('/student', (req, res) => {
         res.send('Student data inserted successfully.');
     });
 });
+
 app.get('/student', (req, res) => {
     getAllStudents((err, results) => {
         if (err) {
@@ -85,6 +101,7 @@ app.post('/internship', (req, res) => {
         res.send('Internship data inserted successfully.');
     });
 });
+
 app.get('/internship', (req, res) => {
     getAllInternships((err, results) => {
         if (err) {
@@ -103,6 +120,7 @@ app.post('/placement', (req, res) => {
         res.send('Placement data inserted successfully.');
     });
 });
+
 app.get('/placement', (req, res) => {
     getAllPlacements((err, results) => {
         if (err) {
@@ -112,9 +130,10 @@ app.get('/placement', (req, res) => {
     });
 });
 
-
-
-
+// Use route handlers
+app.use('/login', loginRoutes);
+app.use('/register', registerRouter);
+app.use('/logout', logoutRouter);
 
 // Start the server
 app.listen(port, () => {

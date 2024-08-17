@@ -53,7 +53,8 @@ const Internship = () => {
         const filteredInternships = internships.filter(internship => {
             return (
                 internship.USN.toLowerCase().includes(trimmedSearchQuery) ||
-                internship.Company.toLowerCase().includes(trimmedSearchQuery)
+                internship.Company.toLowerCase().includes(trimmedSearchQuery) ||
+                internship.Offer_Type.toLowerCase().includes(trimmedSearchQuery)
             );
         });
 
@@ -75,7 +76,7 @@ const Internship = () => {
                 <input
                     type="text"
                     className="form-control"
-                    placeholder="Search by USN or Company"
+                    placeholder="Search by USN, Company, or Offer Type"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -90,7 +91,7 @@ const Internship = () => {
 
             <button className="btn btn-primary mb-3" onClick={() => setDialogOpen(true)}>Add Internship</button>
 
-            <div className="table-responsive">
+            <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <table className="table table-bordered">
                     <thead className="thead-light">
                         <tr>

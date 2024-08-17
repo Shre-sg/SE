@@ -31,10 +31,9 @@ const AllData = () => {
     }
 
     return (
-        <div className="container mt-5">
+        <div className="container mt-5" style={{ paddingRight: '10px', paddingBottom: '20px' }}>
             <h1 className="mb-4">All Data</h1>
-
-            <div className="table-responsive">
+            <div className="table-responsive" style={{ maxHeight: '600px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-bordered">
                     <thead className="thead-light">
                         <tr>

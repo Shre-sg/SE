@@ -29,10 +29,20 @@ const Student = () => {
     const fetchStudents = async () => {
         try {
             const response = await axios.get('http://localhost:3000/student');
-            setStudents(response.data);
+            const overriddenData = response.data.map(student => ({
+                ...student,
+                Gender: cleanString(student.Gender),
+                Eligibility_for_Placements: cleanString(student.Eligibility_for_Placements)
+            }));
+            console.log('Fetched Students:', overriddenData); // Log fetched data
+            setStudents(overriddenData);
         } catch (error) {
             console.error('Error fetching students:', error);
         }
+    };
+
+    const cleanString = (str) => {
+        return str?.replace(/\s+/g, ' ').trim().toLowerCase();
     };
 
     const handleInputChange = (e) => {
@@ -55,15 +65,25 @@ const Student = () => {
     };
 
     const handleSearch = () => {
-        const trimmedSearchQuery = searchQuery.trim().toLowerCase();
-
+        const trimmedSearchQuery = cleanString(searchQuery);
+    
         const filteredStudents = students.filter(student => {
+            const genderMatch = cleanString(student.Gender) === trimmedSearchQuery;
+            const eligibilityMatch = cleanString(student.Eligibility_for_Placements) === trimmedSearchQuery;
+    
+            console.log('Searching for:', trimmedSearchQuery, 
+                        'Gender found:', student.Gender, 'Gender Match:', genderMatch,
+                        'Eligibility found:', student.Eligibility_for_Placements, 'Eligibility Match:', eligibilityMatch);
+    
             return (
-                student.USN.toLowerCase().includes(trimmedSearchQuery) ||
-                student.Name.toLowerCase().includes(trimmedSearchQuery)
+                cleanString(student.USN).includes(trimmedSearchQuery) ||
+                cleanString(student.Name).includes(trimmedSearchQuery) ||
+                cleanString(student.Department).includes(trimmedSearchQuery) ||
+                genderMatch ||
+                eligibilityMatch
             );
         });
-
+    
         setStudents(filteredStudents);
         setSearched(true);
     };
@@ -82,7 +102,7 @@ const Student = () => {
                 <input
                     type="text"
                     className="form-control"
-                    placeholder="Search by USN or Name"
+                    placeholder="Search by USN, Name, Department, Gender, or Eligibility"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -97,7 +117,7 @@ const Student = () => {
 
             <button className="btn btn-primary mb-3" onClick={() => setDialogOpen(true)}>Add Student</button>
 
-            <div className="table-responsive">
+            <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-bordered">
                     <thead className="thead-light">
                         <tr>

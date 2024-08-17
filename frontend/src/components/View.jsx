@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import 'bootswatch/dist/lux/bootstrap.min.css'; // Import Bootswatch Lux theme
 import { Pie, Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
@@ -12,6 +13,7 @@ const View = () => {
     const [typeData, setTypeData] = useState(null);
     const [categoryData, setCategoryData] = useState(null);
     const [error, setError] = useState(null);
+    const navigate = useNavigate(); // Initialize useNavigate
 
     useEffect(() => {
         const fetchData = async () => {
@@ -106,16 +108,38 @@ const View = () => {
         maintainAspectRatio: false,
     };
 
+    const handleLogout = () => {
+        // Implement your logout logic here
+        // For example, clearing authentication tokens and redirecting to the login page
+        // localStorage.removeItem('authToken');
+        navigate('/login'); // Redirect to login page
+    };
+
     return (
         <div className="container mt-5">
             <div style={{ position: 'absolute', top: '15px', left: '15px', margin: '10px' }}>
                 <img src={image1} alt="RVCE Logo" style={{ width: '130px' }} />
             </div>
-            {/* Add the right logo */}
             <div style={{ position: 'absolute', top: '10px', right: '15px', margin: '10px' }}>
                 <img src={image2} alt="RVCE" style={{ width: '300px' }} />
             </div>
-            <h2 style={{ marginTop: '200px' }}>Placement Data <br></br>On Campus vs Off Campus</h2>
+
+            <div className="text-center">
+                <h1 style={{ marginTop: '170px' }}>Placement Portal</h1>
+            </div>
+            <div className="d-flex justify-content-between mb-4" style={{ marginTop: '20px' }}>
+                <button className="btn btn-success" onClick={() => navigate('/student')}>Student Data</button>
+                <button className="btn btn-primary" onClick={() => navigate('/internship')}>Internship Data</button>
+                <button className="btn btn-success" onClick={() => navigate('/placement')}>Placement Data</button>
+            </div>
+
+            <div>
+                <hr className="my-4" />
+            </div>
+
+            <div className="text-center">
+                <h2 style={{ marginTop: '30px' }}>On Campus vs Off Campus</h2>
+            </div>
             {campusData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -148,7 +172,12 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <h2 style={{ marginTop: '40px' }}>CTC Statistics</h2>
+            <div>
+                <hr className="my-4" />
+            </div>
+            <div className="text-center">
+                <h2 style={{ marginTop: '40px' }}>CTC Statistics</h2>
+            </div>
             {ctcData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -161,15 +190,15 @@ const View = () => {
                         <tbody>
                             <tr>
                                 <td>MAX CTC</td>
-                                <td>{ctcData['MAX CTC']}</td>
+                                <td>{ctcData['MAX of CTC (in lakhs)']}</td>
                             </tr>
                             <tr>
                                 <td>Average CTC</td>
-                                <td>{ctcData['Average CTC']}</td>
+                                <td>{ctcData['Average CTC (in lakhs)']}</td>
                             </tr>
                             <tr>
                                 <td>Median CTC</td>
-                                <td>{ctcData['Median CTC']}</td>
+                                <td>{ctcData['Median CTC (in lakhs)']}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -181,7 +210,13 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <h2 style={{ marginTop: '40px' }}>Offer Type Counts</h2>
+            <div>
+                <hr className="my-4" />
+            </div>
+            <div className="text-center">
+                <h2 style={{ marginTop: '40px' }}>Offer Type Counts</h2>
+            </div>
+            
             {typeData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -222,7 +257,12 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <h2 style={{ marginTop: '40px' }}>Category Counts</h2>
+            <div>
+                <hr className="my-4" />
+            </div>
+            <div className="text-center">
+                <h2 style={{ marginTop: '40px' }}>Category Counts</h2>
+            </div>
             {categoryData ? (
                 <>
                     <table className="table table-bordered table-striped" style={tableStyle}>
@@ -258,6 +298,11 @@ const View = () => {
                     )}
                 </>
             ) : <p>Loading...</p>}
+
+            <div className="d-flex justify-content-between mb-4" style={{ marginTop: '40px' }}>
+                <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+                <button className="btn btn-secondary" onClick={() => navigate('/all')}>Data Page</button>
+            </div>
         </div>
     );
 };

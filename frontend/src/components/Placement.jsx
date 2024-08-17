@@ -57,7 +57,9 @@ const Placement = () => {
         const filteredData = originalData.filter(row => {
             return (
                 row.USN.toLowerCase().includes(trimmedSearchQuery) ||
-                row.Company.toLowerCase().includes(trimmedSearchQuery)
+                row.Company.toLowerCase().includes(trimmedSearchQuery) ||
+                row.Remarks.toLowerCase().includes(trimmedSearchQuery) ||
+                (row.Category.toLowerCase() === trimmedSearchQuery) // Exact match for Category
             );
         });
 
@@ -79,7 +81,7 @@ const Placement = () => {
                 <input
                     type="text"
                     className="form-control"
-                    placeholder="Search by USN or Company"
+                    placeholder="Search by USN, Company, Category, or Remarks"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -94,7 +96,7 @@ const Placement = () => {
 
             <button className="btn btn-primary mb-3" onClick={() => setDialogOpen(true)}>Add Data</button>
 
-            <div className="table-responsive">
+            <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <table className="table table-bordered">
                     <thead className="thead-light">
                         <tr>
