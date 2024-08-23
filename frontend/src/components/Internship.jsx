@@ -14,6 +14,7 @@ const Internship = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchInternships();
@@ -37,7 +38,26 @@ const Internship = () => {
         }));
     };
 
+    const validateFormData = () => {
+        const newErrors = {};
+        const stipendRegex = /^\d+(\.\d{1,2})?$/; // Allows stipend values like 5000, 5000.50
+
+        if (!formData.USN) newErrors.USN = "USN is required.";
+        if (!formData.Company) newErrors.Company = "Company is required.";
+        if (!stipendRegex.test(formData.Stipend)) newErrors.Stipend = "Invalid Stipend format.";
+        if (!formData.Status) newErrors.Status = "Status is required.";
+        if (!formData.Start_Date) newErrors.Start_Date = "Start Date is required.";
+        if (!formData.Offer_Type) newErrors.Offer_Type = "Offer Type is required.";
+
+        return newErrors;
+    };
+
     const handleAddInternship = async () => {
+        const validationErrors = validateFormData();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
         try {
             await axios.post('http://localhost:3000/internship', formData);
             setDialogOpen(false);
@@ -129,12 +149,48 @@ const Internship = () => {
                                 </button>
                             </div>
                             <div className="modal-body">
-                                <input type="text" name="USN" placeholder="USN" onChange={handleInputChange} />
-                                <input type="text" name="Company" placeholder="Company" onChange={handleInputChange} />
-                                <input type="text" name="Stipend" placeholder="Stipend" onChange={handleInputChange} />
-                                <input type="text" name="Status" placeholder="Status" onChange={handleInputChange} />
-                                <input type="date" name="Start_Date" placeholder="Start Date" onChange={handleInputChange} />
-                                <input type="text" name="Offer_Type" placeholder="Offer Type" onChange={handleInputChange} />
+                                <input
+                                    type="text"
+                                    name="USN"
+                                    placeholder="USN"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.USN && <div className="text-danger">{errors.USN}</div>}
+                                <input
+                                    type="text"
+                                    name="Company"
+                                    placeholder="Company"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Company && <div className="text-danger">{errors.Company}</div>}
+                                <input
+                                    type="text"
+                                    name="Stipend"
+                                    placeholder="Stipend"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Stipend && <div className="text-danger">{errors.Stipend}</div>}
+                                <input
+                                    type="text"
+                                    name="Status"
+                                    placeholder="Status"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Status && <div className="text-danger">{errors.Status}</div>}
+                                <input
+                                    type="date"
+                                    name="Start_Date"
+                                    placeholder="Start Date"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Start_Date && <div className="text-danger">{errors.Start_Date}</div>}
+                                <input
+                                    type="text"
+                                    name="Offer_Type"
+                                    placeholder="Offer Type"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Offer_Type && <div className="text-danger">{errors.Offer_Type}</div>}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setDialogOpen(false)}>Close</button>

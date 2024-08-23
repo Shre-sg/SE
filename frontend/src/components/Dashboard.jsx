@@ -16,7 +16,7 @@ const Dashboard = () => {
       </div>
 
       {/* Add margin top for spacing */}
-      <h2 className="text-center mb-4">Placement & Result Portal</h2> {/* Center the text and add margin bottom */}
+      <h2 className="text-center mb-4">Placement Portal</h2> {/* Center the text and add margin bottom */}
       <nav className="text-center">
         <Link to="/login" className="btn btn-primary me-2">
           Login

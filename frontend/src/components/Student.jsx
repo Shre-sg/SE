@@ -21,6 +21,7 @@ const Student = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchStudents();
@@ -54,7 +55,34 @@ const Student = () => {
         }));
     };
 
+    const validateFormData = () => {
+        const newErrors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const percentageRegex = /^[0-9]{1,2}(\.[0-9]{1,2})?$/; // Allows percentages like 75, 75.50
+
+        if (!formData.USN) newErrors.USN = "USN is required.";
+        if (!formData.Name) newErrors.Name = "Name is required.";
+        if (!formData.Department) newErrors.Department = "Department is required.";
+        if (!formData.Gender) newErrors.Gender = "Gender is required.";
+        if (!formData.Date_of_Birth) newErrors.Date_of_Birth = "Date of Birth is required.";
+        if (!emailRegex.test(formData.Email)) newErrors.Email = "Invalid Email.";
+        if (formData.Secondary_Email && !emailRegex.test(formData.Secondary_Email)) newErrors.Secondary_Email = "Invalid Secondary Email.";
+        if (!formData.Phone_Number) newErrors.Phone_Number = "Phone Number is required.";
+        if (!percentageRegex.test(formData['10th_Percentage'])) newErrors['10th_Percentage'] = "Invalid 10th Percentage.";
+        if (!percentageRegex.test(formData['12th_Diploma_Percentage'])) newErrors['12th_Diploma_Percentage'] = "Invalid 12th/Diploma Percentage.";
+        if (!percentageRegex.test(formData.BE_CGPA)) newErrors.BE_CGPA = "Invalid BE CGPA.";
+        if (!formData.Active_Backlogs) newErrors.Active_Backlogs = "Active Backlogs is required.";
+        if (!formData.History_of_Backlogs) newErrors.History_of_Backlogs = "History of Backlogs is required.";
+
+        return newErrors;
+    };
+
     const handleAddStudent = async () => {
+        const validationErrors = validateFormData();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
         try {
             await axios.post('http://localhost:3000/student', formData);
             setDialogOpen(false);
@@ -66,15 +94,15 @@ const Student = () => {
 
     const handleSearch = () => {
         const trimmedSearchQuery = cleanString(searchQuery);
-    
+
         const filteredStudents = students.filter(student => {
             const genderMatch = cleanString(student.Gender) === trimmedSearchQuery;
             const eligibilityMatch = cleanString(student.Eligibility_for_Placements) === trimmedSearchQuery;
-    
+
             console.log('Searching for:', trimmedSearchQuery, 
                         'Gender found:', student.Gender, 'Gender Match:', genderMatch,
                         'Eligibility found:', student.Eligibility_for_Placements, 'Eligibility Match:', eligibilityMatch);
-    
+
             return (
                 cleanString(student.USN).includes(trimmedSearchQuery) ||
                 cleanString(student.Name).includes(trimmedSearchQuery) ||
@@ -83,7 +111,7 @@ const Student = () => {
                 eligibilityMatch
             );
         });
-    
+
         setStudents(filteredStudents);
         setSearched(true);
     };
@@ -172,18 +200,31 @@ const Student = () => {
                             </div>
                             <div className="modal-body">
                                 <input type="text" name="USN" placeholder="USN" onChange={handleInputChange} />
+                                {errors.USN && <div className="text-danger">{errors.USN}</div>}
                                 <input type="text" name="Name" placeholder="Name" onChange={handleInputChange} />
+                                {errors.Name && <div className="text-danger">{errors.Name}</div>}
                                 <input type="text" name="Department" placeholder="Department" onChange={handleInputChange} />
+                                {errors.Department && <div className="text-danger">{errors.Department}</div>}
                                 <input type="text" name="Gender" placeholder="Gender" onChange={handleInputChange} />
+                                {errors.Gender && <div className="text-danger">{errors.Gender}</div>}
                                 <input type="date" name="Date_of_Birth" placeholder="Date of Birth" onChange={handleInputChange} />
+                                {errors.Date_of_Birth && <div className="text-danger">{errors.Date_of_Birth}</div>}
                                 <input type="email" name="Email" placeholder="Email" onChange={handleInputChange} />
+                                {errors.Email && <div className="text-danger">{errors.Email}</div>}
                                 <input type="email" name="Secondary_Email" placeholder="Secondary Email" onChange={handleInputChange} />
+                                {errors.Secondary_Email && <div className="text-danger">{errors.Secondary_Email}</div>}
                                 <input type="text" name="Phone_Number" placeholder="Phone Number" onChange={handleInputChange} />
+                                {errors.Phone_Number && <div className="text-danger">{errors.Phone_Number}</div>}
                                 <input type="text" name="10th_Percentage" placeholder="10th Percentage" onChange={handleInputChange} />
+                                {errors['10th_Percentage'] && <div className="text-danger">{errors['10th_Percentage']}</div>}
                                 <input type="text" name="12th_Diploma_Percentage" placeholder="12th/Diploma Percentage" onChange={handleInputChange} />
+                                {errors['12th_Diploma_Percentage'] && <div className="text-danger">{errors['12th_Diploma_Percentage']}</div>}
                                 <input type="text" name="BE_CGPA" placeholder="BE CGPA" onChange={handleInputChange} />
+                                {errors.BE_CGPA && <div className="text-danger">{errors.BE_CGPA}</div>}
                                 <input type="text" name="Active_Backlogs" placeholder="Active Backlogs" onChange={handleInputChange} />
+                                {errors.Active_Backlogs && <div className="text-danger">{errors.Active_Backlogs}</div>}
                                 <input type="text" name="History_of_Backlogs" placeholder="History of Backlogs" onChange={handleInputChange} />
+                                {errors.History_of_Backlogs && <div className="text-danger">{errors.History_of_Backlogs}</div>}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setDialogOpen(false)}>Close</button>

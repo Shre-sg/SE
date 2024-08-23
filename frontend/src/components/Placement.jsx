@@ -17,6 +17,7 @@ const Placement = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
         fetchData();
@@ -41,7 +42,28 @@ const Placement = () => {
         }));
     };
 
+    const validateFormData = () => {
+        const newErrors = {};
+        const ctcRegex = /^\d+(\.\d{1,2})?$/; // Allows CTC values like 50000, 50000.50
+
+        if (!formData.USN) newErrors.USN = "USN is required.";
+        if (!formData.Company) newErrors.Company = "Company is required.";
+        if (!formData.Type) newErrors.Type = "Type is required.";
+        if (!ctcRegex.test(formData.CTC)) newErrors.CTC = "Invalid CTC format.";
+        if (!formData.Category) newErrors.Category = "Category is required.";
+        if (!formData.Remarks) newErrors.Remarks = "Remarks are required.";
+        if (!formData.Offer_Date) newErrors.Offer_Date = "Offer Date is required.";
+        if (!formData.Start_Date_Internship) newErrors.Start_Date_Internship = "Start Date (Internship) is required.";
+
+        return newErrors;
+    };
+
     const handleAddData = async () => {
+        const validationErrors = validateFormData();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
         try {
             await axios.post('http://localhost:3000/placement', formData);
             setDialogOpen(false);
@@ -138,14 +160,62 @@ const Placement = () => {
                                 </button>
                             </div>
                             <div className="modal-body">
-                                <input type="text" name="USN" placeholder="USN" onChange={handleInputChange} />
-                                <input type="text" name="Company" placeholder="Company" onChange={handleInputChange} />
-                                <input type="text" name="Type" placeholder="Type" onChange={handleInputChange} />
-                                <input type="text" name="CTC" placeholder="CTC" onChange={handleInputChange} />
-                                <input type="text" name="Category" placeholder="Category" onChange={handleInputChange} />
-                                <input type="text" name="Remarks" placeholder="Remarks" onChange={handleInputChange} />
-                                <input type="date" name="Offer_Date" placeholder="Offer Date" onChange={handleInputChange} />
-                                <input type="date" name="Start_Date_Internship" placeholder="Start Date (Internship)" onChange={handleInputChange} />
+                                <input
+                                    type="text"
+                                    name="USN"
+                                    placeholder="USN"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.USN && <div className="text-danger">{errors.USN}</div>}
+                                <input
+                                    type="text"
+                                    name="Company"
+                                    placeholder="Company"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Company && <div className="text-danger">{errors.Company}</div>}
+                                <input
+                                    type="text"
+                                    name="Type"
+                                    placeholder="Type"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Type && <div className="text-danger">{errors.Type}</div>}
+                                <input
+                                    type="text"
+                                    name="CTC"
+                                    placeholder="CTC"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.CTC && <div className="text-danger">{errors.CTC}</div>}
+                                <input
+                                    type="text"
+                                    name="Category"
+                                    placeholder="Category"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Category && <div className="text-danger">{errors.Category}</div>}
+                                <input
+                                    type="text"
+                                    name="Remarks"
+                                    placeholder="Remarks"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Remarks && <div className="text-danger">{errors.Remarks}</div>}
+                                <input
+                                    type="date"
+                                    name="Offer_Date"
+                                    placeholder="Offer Date"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Offer_Date && <div className="text-danger">{errors.Offer_Date}</div>}
+                                <input
+                                    type="date"
+                                    name="Start_Date_Internship"
+                                    placeholder="Start Date (Internship)"
+                                    onChange={handleInputChange}
+                                />
+                                {errors.Start_Date_Internship && <div className="text-danger">{errors.Start_Date_Internship}</div>}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setDialogOpen(false)}>Close</button>
