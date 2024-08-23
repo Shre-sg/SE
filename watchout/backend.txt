@@ -1,3 +1,6 @@
+fuser -k 3000/tcp
+
+
 nvm install node    //update node
 npm install -g npm   //update npm
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash     //update nvm

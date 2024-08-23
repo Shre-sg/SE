@@ -5,7 +5,7 @@ const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'Lingaiah@60',
-    database: 'RV_COLLEGE_PLACEMENT',
+    database: 'RV_COLLEGE_PLACEMENT', //RV_COLLEGE_PLACEMENT
 });
 
 ////spoorthi db

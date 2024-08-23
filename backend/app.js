@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const multer = require('multer');
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const path = require('path');
+
+const fileUpload = require('express-fileupload');
+const xlsx = require('xlsx');
+const db = require('./modules/db');
 
 // Import route handlers
 const loginRoutes = require('./modules/login');
@@ -22,7 +24,6 @@ const { getOnOffCampusCounts } = require('./modules/campus');
 
 const app = express();
 const port = process.env.PORT || 3000;
-
 // Middleware setup
 app.use(express.json());
 app.use(cors());
@@ -32,6 +33,138 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
 }));
+
+
+
+app.use(fileUpload());
+app.post('/upload/student', (req, res) => {
+    if (!req.files || !req.files.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const file = req.files.file;
+    const workbook = xlsx.read(file.data, { type: 'buffer' });
+    const sheetName = 'Student List';
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = xlsx.utils.sheet_to_json(worksheet);
+
+    const insertQuery = `
+        INSERT INTO student (
+            USN, Name, Department, Gender, Date_of_Birth, Email, 
+            Secondary_Email, Phone_Number, 10th_Percentage, 
+            12th_Diploma_Percentage, BE_CGPA, Active_Backlogs, 
+            History_of_Backlogs, Eligibility_for_Placements
+        ) VALUES ?`;
+
+    const values = jsonData.map((row) => {
+        // Convert "History of Backlogs (YES/NO)" to 1 or 0
+        const historyOfBacklogs = row['History of Backlogs (YES/NO)'] === 'YES' ? 1 : 0;
+        
+        // Determine "Eligibility for Placements"
+        const eligibilityForPlacements = row['Active Backlogs'] > 0 ? 'Not eligible' : 'Eligible';
+
+        return [
+            row['USN'],
+            row['Name'],
+            row['Branch'], // Assuming "Branch" corresponds to "Department"
+            row['Gender'],
+            row['Date of Birth (DD/MM/YYYY)'],
+            row['College Email ID'],
+            row['Personal Email ID'],
+            row['Mobile'],
+            row['10th Percentage'],
+            row['12th/Diploma Percentage'],
+            row['BE CGPA'],
+            row['Active Backlogs'],
+            historyOfBacklogs,
+            eligibilityForPlacements
+        ];
+    });
+
+    db.query(insertQuery, [values], (err, result) => {
+        if (err) {
+            return res.status(500).send('Database error: ' + err.message);
+        }
+        res.send('Data inserted successfully.');
+    });
+});
+
+
+app.post('/upload/internship', (req, res) => {
+    if (!req.files || !req.files.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const file = req.files.file;
+    const workbook = xlsx.read(file.data, { type: 'buffer' });
+    const sheetName = 'Internship';
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = xlsx.utils.sheet_to_json(worksheet);
+    console.log(jsonData);
+    const insertQuery = `
+        INSERT INTO internship (
+            USN, Company, Stipend, Status,  Start_Date, Offer_Type
+        ) VALUES ?`;
+
+    const values = jsonData.map((row) => {
+
+        return [
+            row['USN'],
+            row['Company'],
+            row['Stipend'], 
+            row['Status'],
+            row['Start Date'],
+            row['Offer']
+        ];
+    });
+
+    db.query(insertQuery, [values], (err, result) => {
+        if (err) {
+            return res.status(500).send('Database error: ' + err.message);
+        }
+        res.send('Data inserted successfully.');
+    });
+});
+
+
+app.post('/upload/placement', (req, res) => {
+    if (!req.files || !req.files.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    const file = req.files.file;
+    const workbook = xlsx.read(file.data, { type: 'buffer' });
+    const sheetName = 'Placement';
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = xlsx.utils.sheet_to_json(worksheet);
+    console.log(jsonData);
+    const insertQuery = `
+        INSERT INTO placement (
+            USN, Company, Type, CTC, Category, Remarks, Offer_Date, Start_Date_Internship
+        ) VALUES ?`;
+
+    const values = jsonData.map((row) => {
+
+        return [
+            row['USN'],
+            row['Company'],
+            row['Type'], 
+            row['CTC'],
+            row['Category'],
+            row['Remarks'],
+            row['Offer Date'],
+            row['Start Date (Internship)']
+        ];
+    });
+
+    db.query(insertQuery, [values], (err, result) => {
+        if (err) {
+            return res.status(500).send('Database error: ' + err.message);
+        }
+        res.send('Data inserted successfully.');
+    });
+});
+
 
 // Route handlers
 app.get('/', (req, res) => {

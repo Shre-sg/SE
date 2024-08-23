@@ -22,6 +22,7 @@ const Student = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
     const [errors, setErrors] = useState({});
+    const [file, setFile] = useState(null);
 
     useEffect(() => {
         fetchStudents();
@@ -122,6 +123,32 @@ const Student = () => {
         setSearched(false);
     };
 
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
+
+    const handleUpload = async () => {
+        if (!file) {
+            alert('Please select a file first.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('http://localhost:3000/upload/student', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            console.log(response.data);
+            fetchStudents();
+        } catch (error) {
+            console.error('Error uploading file:', error);
+        }
+    };
+
     return (
         <div className="container mt-5">
             <h1 className="mb-4">Student Data</h1>
@@ -143,7 +170,15 @@ const Student = () => {
                 <button className="btn btn-secondary mb-3" onClick={handleResetSearch}>Reset Search</button>
             )}
 
-            <button className="btn btn-primary mb-3" onClick={() => setDialogOpen(true)}>Add Student</button>
+            {/* Container for Add Student and Upload Students buttons */}
+            <div className="d-flex justify-content-between mb-3">
+                <button className="btn btn-primary" onClick={() => setDialogOpen(true)}>Add Student</button>
+                <div className="d-flex">
+                    <input type="file" onChange={handleFileChange} style={{ display: 'none' }} id="fileInput" />
+                    <label htmlFor="fileInput" className="btn btn-secondary mr-2">Choose File</label>
+                    <button className="btn btn-info" onClick={handleUpload}>Upload Students</button>
+                </div>
+            </div>
 
             <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto', overflowX: 'auto' }}>
                 <table className="table table-bordered">
@@ -193,42 +228,28 @@ const Student = () => {
                     <div className="modal-dialog" role="document">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">Add Student Data</h5>
+                                <h5 className="modal-title">Add Student</h5>
                                 <button type="button" className="close" onClick={() => setDialogOpen(false)}>
                                     <span>&times;</span>
                                 </button>
                             </div>
                             <div className="modal-body">
-                                <input type="text" name="USN" placeholder="USN" onChange={handleInputChange} />
-                                {errors.USN && <div className="text-danger">{errors.USN}</div>}
-                                <input type="text" name="Name" placeholder="Name" onChange={handleInputChange} />
-                                {errors.Name && <div className="text-danger">{errors.Name}</div>}
-                                <input type="text" name="Department" placeholder="Department" onChange={handleInputChange} />
-                                {errors.Department && <div className="text-danger">{errors.Department}</div>}
-                                <input type="text" name="Gender" placeholder="Gender" onChange={handleInputChange} />
-                                {errors.Gender && <div className="text-danger">{errors.Gender}</div>}
-                                <input type="date" name="Date_of_Birth" placeholder="Date of Birth" onChange={handleInputChange} />
-                                {errors.Date_of_Birth && <div className="text-danger">{errors.Date_of_Birth}</div>}
-                                <input type="email" name="Email" placeholder="Email" onChange={handleInputChange} />
-                                {errors.Email && <div className="text-danger">{errors.Email}</div>}
-                                <input type="email" name="Secondary_Email" placeholder="Secondary Email" onChange={handleInputChange} />
-                                {errors.Secondary_Email && <div className="text-danger">{errors.Secondary_Email}</div>}
-                                <input type="text" name="Phone_Number" placeholder="Phone Number" onChange={handleInputChange} />
-                                {errors.Phone_Number && <div className="text-danger">{errors.Phone_Number}</div>}
-                                <input type="text" name="10th_Percentage" placeholder="10th Percentage" onChange={handleInputChange} />
-                                {errors['10th_Percentage'] && <div className="text-danger">{errors['10th_Percentage']}</div>}
-                                <input type="text" name="12th_Diploma_Percentage" placeholder="12th/Diploma Percentage" onChange={handleInputChange} />
-                                {errors['12th_Diploma_Percentage'] && <div className="text-danger">{errors['12th_Diploma_Percentage']}</div>}
-                                <input type="text" name="BE_CGPA" placeholder="BE CGPA" onChange={handleInputChange} />
-                                {errors.BE_CGPA && <div className="text-danger">{errors.BE_CGPA}</div>}
-                                <input type="text" name="Active_Backlogs" placeholder="Active Backlogs" onChange={handleInputChange} />
-                                {errors.Active_Backlogs && <div className="text-danger">{errors.Active_Backlogs}</div>}
-                                <input type="text" name="History_of_Backlogs" placeholder="History of Backlogs" onChange={handleInputChange} />
-                                {errors.History_of_Backlogs && <div className="text-danger">{errors.History_of_Backlogs}</div>}
+                                {/* Student form fields */}
+                                <div className="form-group">
+                                    <label htmlFor="USN">USN</label>
+                                    <input type="text" className="form-control" id="USN" name="USN" value={formData.USN} onChange={handleInputChange} />
+                                    {errors.USN && <div className="text-danger">{errors.USN}</div>}
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="Name">Name</label>
+                                    <input type="text" className="form-control" id="Name" name="Name" value={formData.Name} onChange={handleInputChange} />
+                                    {errors.Name && <div className="text-danger">{errors.Name}</div>}
+                                </div>
+                                {/* More form fields as needed */}
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setDialogOpen(false)}>Close</button>
-                                <button type="button" className="btn btn-primary" onClick={handleAddStudent}>Add</button>
+                                <button type="button" className="btn btn-primary" onClick={handleAddStudent}>Add Student</button>
                             </div>
                         </div>
                     </div>

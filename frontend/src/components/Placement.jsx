@@ -18,6 +18,7 @@ const Placement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
     const [errors, setErrors] = useState({});
+    const [file, setFile] = useState(null); // State to handle file upload
 
     useEffect(() => {
         fetchData();
@@ -95,6 +96,33 @@ const Placement = () => {
         setSearched(false);
     };
 
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]); // Set the file to state
+    };
+
+    const handleFileUpload = async () => {
+        if (!file) {
+            alert('Please select a file to upload');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            await axios.post('http://localhost:3000/upload/placement', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            fetchData(); // Refresh the placement data after uploading
+            alert('File uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            alert('Failed to upload file');
+        }
+    };
+
     return (
         <div className="container mt-5">
             <h1 className="mb-4">Placement Data</h1>
@@ -116,7 +144,16 @@ const Placement = () => {
                 <button className="btn btn-secondary mb-3" onClick={handleResetSearch}>Reset Search</button>
             )}
 
-            <button className="btn btn-primary mb-3" onClick={() => setDialogOpen(true)}>Add Data</button>
+            <div className="d-flex justify-content-between mb-3">
+                {/* Add Data Button */}
+                <button className="btn btn-primary" onClick={() => setDialogOpen(true)}>Add Data</button>
+
+                {/* File Upload Section */}
+                <div className="d-flex align-items-center ml-auto">
+                    <input type="file" onChange={handleFileChange} className="mr-2" />
+                    <button className="btn btn-success" onClick={handleFileUpload}>Upload File</button>
+                </div>
+            </div>
 
             <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <table className="table table-bordered">

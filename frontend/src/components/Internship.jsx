@@ -15,6 +15,7 @@ const Internship = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
     const [errors, setErrors] = useState({});
+    const [file, setFile] = useState(null); // State to handle file upload
 
     useEffect(() => {
         fetchInternships();
@@ -88,10 +89,44 @@ const Internship = () => {
         setSearched(false);
     };
 
+    const handleFileChange = (e) => {
+        if (e.target.files.length > 0) {
+            setFile(e.target.files[0]); // Set the file to state
+        }
+    };
+
+    const handleFileUpload = async () => {
+        if (!file) {
+            alert('Please select a file to upload');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('http://localhost:3000/upload/internship', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (response.status === 200) {
+                fetchInternships(); // Refresh the internship data after uploading
+                alert('File uploaded successfully');
+            } else {
+                alert('Failed to upload file');
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error.response || error);
+            alert('Failed to upload file');
+        }
+    };
+
     return (
         <div className="container mt-5">
             <h1 className="mb-4">Internship Data</h1>
 
+            {/* Search Section */}
             <div className="input-group mb-3">
                 <input
                     type="text"
@@ -105,12 +140,24 @@ const Internship = () => {
                 </div>
             </div>
 
+            {/* Reset Search Button */}
             {searched && (
                 <button className="btn btn-secondary mb-3" onClick={handleResetSearch}>Reset Search</button>
             )}
 
-            <button className="btn btn-primary mb-3" onClick={() => setDialogOpen(true)}>Add Internship</button>
+            {/* Action Buttons Section: Add Internship and File Upload */}
+            <div className="d-flex justify-content-between mb-3">
+                {/* Add Internship Button */}
+                <button className="btn btn-primary" onClick={() => setDialogOpen(true)}>Add Internship</button>
 
+                {/* File Upload Section */}
+                <div>
+                    <input type="file" onChange={handleFileChange} />
+                    <button className="btn btn-success ml-2" onClick={handleFileUpload}>Upload File</button>
+                </div>
+            </div>
+
+            {/* Internship Table */}
             <div className="table-responsive" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                 <table className="table table-bordered">
                     <thead className="thead-light">
@@ -138,6 +185,7 @@ const Internship = () => {
                 </table>
             </div>
 
+            {/* Add Internship Modal */}
             {dialogOpen && (
                 <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
                     <div className="modal-dialog" role="document">
