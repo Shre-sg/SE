@@ -8,7 +8,7 @@ const db = mysql.createConnection({
     database: 'PLACEMENT', //RV_COLLEGE_PLACEMENT
 });
 //heelo
-
+//whyy 
 ////spoorthi db
 // const db = mysql.createConnection({
 //   host: 'localhost',
