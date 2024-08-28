@@ -7,6 +7,7 @@ const db = mysql.createConnection({
     password: 'Lingaiah@60',
     database: 'PLACEMENT', //RV_COLLEGE_PLACEMENT
 });
+//heelo
 
 ////spoorthi db
 // const db = mysql.createConnection({
