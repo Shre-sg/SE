@@ -114,6 +114,17 @@ const View = () => {
         // localStorage.removeItem('authToken');
         navigate('/login'); // Redirect to login page
     };
+    
+    const handleDeleteAllData = async () => {
+        try {
+            await axios.delete('http://localhost:3000/delete');
+            alert('All data deleted successfully.');
+        } catch (error) {
+            console.error('Error deleting data:', error);
+            alert('Error deleting data.');
+        }
+    };
+    
 
     return (
         <div className="container mt-5">
@@ -299,10 +310,12 @@ const View = () => {
                 </>
             ) : <p>Loading...</p>}
 
-            <div className="d-flex justify-content-between mb-4" style={{ marginTop: '40px' }}>
-                <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-                <button className="btn btn-primary" onClick={() => navigate('/all')}>Data Page</button>
-            </div>
+                <div className="d-flex justify-content-between mb-4" style={{ marginTop: '40px' }}>
+                    <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+                    <button className="btn btn-primary" onClick={() => navigate('/all')}>Data Page</button>
+                    <button className="btn btn-warning" onClick={handleDeleteAllData}>Delete All Data</button> {/* New button */}
+                </div>
+
         </div>
     );
 };

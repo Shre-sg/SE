@@ -56,7 +56,23 @@ app.post('/upload/student', (req, res) => {
             History_of_Backlogs, Eligibility_for_Placements
         ) VALUES ?`;
 
+    // Helper function to format the date in 'dd/mm/yyyy'
+    function formatExcelDate(excelDate) {
+        // Check if date is a number (Excel's date format)
+        if (typeof excelDate === 'number') {
+            const jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000); // Convert Excel date to JS date
+            const day = String(jsDate.getDate()).padStart(2, '0');
+            const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+            const year = jsDate.getFullYear();
+            return `${day}/${month}/${year}`; // Format in 'dd/mm/yyyy'
+        }
+        // If it's already a string, return it as is
+        return excelDate;
+    }
+
     const values = jsonData.map((row) => {
+        const formattedDateOfBirth = formatExcelDate(row['Date of Birth (DD/MM/YYYY)']); // Format the date
+
         // Convert "History of Backlogs (YES/NO)" to 1 or 0
         const historyOfBacklogs = row['History of Backlogs (YES/NO)'] === 'YES' ? 1 : 0;
         
@@ -68,7 +84,7 @@ app.post('/upload/student', (req, res) => {
             row['Name'],
             row['Branch'], // Assuming "Branch" corresponds to "Department"
             row['Gender'],
-            row['Date of Birth (DD/MM/YYYY)'],
+            formattedDateOfBirth, // Use the formatted date
             row['College Email ID'],
             row['Personal Email ID'],
             row['Mobile'],
@@ -100,23 +116,33 @@ app.post('/upload/internship', (req, res) => {
     const sheetName = 'Internship';
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(worksheet);
-    console.log(jsonData);
-    const insertQuery = `
-        INSERT INTO internship (
-            USN, Company, Stipend, Status,  Start_Date, Offer_Type
-        ) VALUES ?`;
+
+    // Function to format Excel date
+    function formatExcelDate(excelDate) {
+        const jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000); // Convert Excel date to JS date
+        const day = String(jsDate.getDate()).padStart(2, '0');
+        const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+        const year = jsDate.getFullYear();
+        return `${day}/${month}/${year}`; // Format in 'dd/mm/yyyy'
+    }
 
     const values = jsonData.map((row) => {
+        const formattedDate = typeof row['Start Date'] === 'number' ? formatExcelDate(row['Start Date']) : row['Start Date'];
 
         return [
             row['USN'],
             row['Company'],
             row['Stipend'], 
             row['Status'],
-            row['Start Date'],
+            formattedDate,
             row['Offer']
         ];
     });
+
+    const insertQuery = `
+        INSERT INTO internship (
+            USN, Company, Stipend, Status, Start_Date, Offer_Type
+        ) VALUES ?`;
 
     db.query(insertQuery, [values], (err, result) => {
         if (err) {
@@ -125,7 +151,6 @@ app.post('/upload/internship', (req, res) => {
         res.send('Data inserted successfully.');
     });
 });
-
 
 app.post('/upload/placement', (req, res) => {
     if (!req.files || !req.files.file) {
@@ -137,25 +162,37 @@ app.post('/upload/placement', (req, res) => {
     const sheetName = 'Placement';
     const worksheet = workbook.Sheets[sheetName];
     const jsonData = xlsx.utils.sheet_to_json(worksheet);
-    console.log(jsonData);
-    const insertQuery = `
-        INSERT INTO placement (
-            USN, Company, Type, CTC, Category, Remarks, Offer_Date, Start_Date_Internship
-        ) VALUES ?`;
+
+    // Function to format Excel date
+    function formatExcelDate(excelDate) {
+        const jsDate = new Date((excelDate - (25567 + 1)) * 86400 * 1000); // Convert Excel date to JS date
+        const day = String(jsDate.getDate()).padStart(2, '0');
+        const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+        const year = jsDate.getFullYear();
+        return `${day}/${month}/${year}`; // Format in 'dd/mm/yyyy'
+    }
 
     const values = jsonData.map((row) => {
+        // Check if the date fields are numbers and format them
+        const formattedOfferDate = typeof row['Offer Date'] === 'number' ? formatExcelDate(row['Offer Date']) : row['Offer Date'];
+        const formattedStartDateInternship = typeof row['Start Date (Internship)'] === 'number' ? formatExcelDate(row['Start Date (Internship)']) : row['Start Date (Internship)'];
 
         return [
             row['USN'],
             row['Company'],
-            row['Type'], 
+            row['Type'],
             row['CTC'],
             row['Category'],
             row['Remarks'],
-            row['Offer Date'],
-            row['Start Date (Internship)']
+            formattedOfferDate,
+            formattedStartDateInternship
         ];
     });
+
+    const insertQuery = `
+        INSERT INTO placement (
+            USN, Company, Type, CTC, Category, Remarks, Offer_Date, Start_Date_Internship
+        ) VALUES ?`;
 
     db.query(insertQuery, [values], (err, result) => {
         if (err) {
@@ -163,6 +200,40 @@ app.post('/upload/placement', (req, res) => {
         }
         res.send('Data inserted successfully.');
     });
+});
+
+app.delete('/delete', (req, res) => {
+    const queries = [
+        'SET FOREIGN_KEY_CHECKS = 0;',
+        'TRUNCATE TABLE internship;',
+        'TRUNCATE TABLE placement;',
+        'TRUNCATE TABLE student;',
+        'SET FOREIGN_KEY_CHECKS = 1;'
+    ];
+
+    const executeQuery = (query, callback) => {
+        db.query(query, (err, result) => {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, result);
+        });
+    };
+
+    const runQueries = (index = 0) => {
+        if (index >= queries.length) {
+            return res.send('All data deleted successfully.');
+        }
+
+        executeQuery(queries[index], (err) => {
+            if (err) {
+                return res.status(500).send('Error deleting data: ' + err.message);
+            }
+            runQueries(index + 1);
+        });
+    };
+
+    runQueries();
 });
 
 

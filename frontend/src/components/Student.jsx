@@ -22,7 +22,8 @@ const Student = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [searched, setSearched] = useState(false);
     const [errors, setErrors] = useState({});
-    const [file, setFile] = useState(null);
+    const [file, setFile] = useState(null); // State to handle file upload
+    const [fileName, setFileName] = useState(''); // State to handle file name display
 
     useEffect(() => {
         fetchStudents();
@@ -36,7 +37,7 @@ const Student = () => {
                 Gender: cleanString(student.Gender),
                 Eligibility_for_Placements: cleanString(student.Eligibility_for_Placements)
             }));
-            console.log('Fetched Students:', overriddenData); // Log fetched data
+            console.log('Fetched Students:', overriddenData);
             setStudents(overriddenData);
         } catch (error) {
             console.error('Error fetching students:', error);
@@ -59,7 +60,7 @@ const Student = () => {
     const validateFormData = () => {
         const newErrors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const percentageRegex = /^[0-9]{1,2}(\.[0-9]{1,2})?$/; // Allows percentages like 75, 75.50
+        const percentageRegex = /^[0-9]{1,2}(\.[0-9]{1,2})?$/;
 
         if (!formData.USN) newErrors.USN = "USN is required.";
         if (!formData.Name) newErrors.Name = "Name is required.";
@@ -124,12 +125,15 @@ const Student = () => {
     };
 
     const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
+        if (e.target.files.length > 0) {
+            setFile(e.target.files[0]);
+            setFileName(e.target.files[0].name); // Update the file name state
+        }
     };
 
     const handleUpload = async () => {
         if (!file) {
-            alert('Please select a file first.');
+            alert('Please select a file to upload');
             return;
         }
 
@@ -142,10 +146,17 @@ const Student = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-            console.log(response.data);
-            fetchStudents();
+            if (response.status === 200) {
+                fetchStudents(); // Refresh the student data after uploading
+                alert('File uploaded successfully');
+                setFile(null); // Clear the file state
+                setFileName(''); // Clear the file name state
+            } else {
+                alert('Failed to upload file');
+            }
         } catch (error) {
-            console.error('Error uploading file:', error);
+            console.error('Error uploading file:', error.response || error);
+            alert('Failed to upload file');
         }
     };
 
@@ -176,7 +187,8 @@ const Student = () => {
                 <div className="d-flex">
                     <input type="file" onChange={handleFileChange} style={{ display: 'none' }} id="fileInput" />
                     <label htmlFor="fileInput" className="btn btn-secondary mr-2">Choose File</label>
-                    <button className="btn btn-info" onClick={handleUpload}>Upload Students</button>
+                    {fileName && <span className="ml-2">{fileName}</span>} {/* Display the selected file name */}
+                    <button className="btn btn-info ml-2" onClick={handleUpload}>Upload Students</button>
                 </div>
             </div>
 
@@ -223,9 +235,10 @@ const Student = () => {
                 </table>
             </div>
 
+            {/* Add Student Modal */}
             {dialogOpen && (
-                <div className="modal" tabIndex="-1" role="dialog" style={{ display: 'block' }}>
-                    <div className="modal-dialog" role="document">
+                <div className="modal show" style={{ display: 'block' }} role="dialog">
+                    <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h5 className="modal-title">Add Student</h5>
@@ -234,22 +247,168 @@ const Student = () => {
                                 </button>
                             </div>
                             <div className="modal-body">
-                                {/* Student form fields */}
-                                <div className="form-group">
-                                    <label htmlFor="USN">USN</label>
-                                    <input type="text" className="form-control" id="USN" name="USN" value={formData.USN} onChange={handleInputChange} />
-                                    {errors.USN && <div className="text-danger">{errors.USN}</div>}
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="Name">Name</label>
-                                    <input type="text" className="form-control" id="Name" name="Name" value={formData.Name} onChange={handleInputChange} />
-                                    {errors.Name && <div className="text-danger">{errors.Name}</div>}
-                                </div>
-                                {/* More form fields as needed */}
+                                <form>
+                                    <div className="form-group">
+                                        <label htmlFor="USN">USN</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="USN"
+                                            name="USN"
+                                            value={formData.USN}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.USN && <small className="form-text text-danger">{errors.USN}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Name">Name</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="Name"
+                                            name="Name"
+                                            value={formData.Name}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Name && <small className="form-text text-danger">{errors.Name}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Department">Department</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="Department"
+                                            name="Department"
+                                            value={formData.Department}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Department && <small className="form-text text-danger">{errors.Department}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Gender">Gender</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="Gender"
+                                            name="Gender"
+                                            value={formData.Gender}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Gender && <small className="form-text text-danger">{errors.Gender}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Date_of_Birth">Date of Birth</label>
+                                        <input
+                                            type="date"
+                                            className="form-control"
+                                            id="Date_of_Birth"
+                                            name="Date_of_Birth"
+                                            value={formData.Date_of_Birth}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Date_of_Birth && <small className="form-text text-danger">{errors.Date_of_Birth}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Email">Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-control"
+                                            id="Email"
+                                            name="Email"
+                                            value={formData.Email}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Email && <small className="form-text text-danger">{errors.Email}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Secondary_Email">Secondary Email</label>
+                                        <input
+                                            type="email"
+                                            className="form-control"
+                                            id="Secondary_Email"
+                                            name="Secondary_Email"
+                                            value={formData.Secondary_Email}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Secondary_Email && <small className="form-text text-danger">{errors.Secondary_Email}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Phone_Number">Phone Number</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="Phone_Number"
+                                            name="Phone_Number"
+                                            value={formData.Phone_Number}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Phone_Number && <small className="form-text text-danger">{errors.Phone_Number}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="10th_Percentage">10th Percentage</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="10th_Percentage"
+                                            name="10th_Percentage"
+                                            value={formData['10th_Percentage']}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors['10th_Percentage'] && <small className="form-text text-danger">{errors['10th_Percentage']}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="12th_Diploma_Percentage">12th/Diploma Percentage</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="12th_Diploma_Percentage"
+                                            name="12th_Diploma_Percentage"
+                                            value={formData['12th_Diploma_Percentage']}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors['12th_Diploma_Percentage'] && <small className="form-text text-danger">{errors['12th_Diploma_Percentage']}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="BE_CGPA">BE CGPA</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="BE_CGPA"
+                                            name="BE_CGPA"
+                                            value={formData.BE_CGPA}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.BE_CGPA && <small className="form-text text-danger">{errors.BE_CGPA}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="Active_Backlogs">Active Backlogs</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="Active_Backlogs"
+                                            name="Active_Backlogs"
+                                            value={formData.Active_Backlogs}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.Active_Backlogs && <small className="form-text text-danger">{errors.Active_Backlogs}</small>}
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="History_of_Backlogs">History of Backlogs</label>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            id="History_of_Backlogs"
+                                            name="History_of_Backlogs"
+                                            value={formData.History_of_Backlogs}
+                                            onChange={handleInputChange}
+                                        />
+                                        {errors.History_of_Backlogs && <small className="form-text text-danger">{errors.History_of_Backlogs}</small>}
+                                    </div>
+                                </form>
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setDialogOpen(false)}>Close</button>
-                                <button type="button" className="btn btn-primary" onClick={handleAddStudent}>Add Student</button>
+                                <button type="button" className="btn btn-primary" onClick={handleAddStudent}>Save</button>
                             </div>
                         </div>
                     </div>
