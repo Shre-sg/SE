@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+require('dotenv').config();
+console.log('AIVEN_SERVICE_PASSWORD:', process.env.AIVEN_SERVICE_PASSWORD); // Debugging line
 
 const fileUpload = require('express-fileupload');
 const xlsx = require('xlsx');

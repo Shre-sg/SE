@@ -1,3 +1,5 @@
+
+
 const mysql = require('mysql2');
 
 //shreyas db
@@ -9,12 +11,15 @@ const mysql = require('mysql2');
 // });
 
 ////spoorthi db
+
+
+
 const db = mysql.createConnection({
   host: 'mysql-2c83732b-shreyasg-5f50.h.aivencloud.com',
   user: 'avnadmin',
-  password: 'AVNS_QDqZodIseE2sz48Ax1H',
+  password: process.env.AIVEN_SERVICE_PASSWORD,  // Use the environment variable
   database: 'PLACEMENT',
-  port : '21146',
+  port: '21146',
 });
 
 ////sanjana db
