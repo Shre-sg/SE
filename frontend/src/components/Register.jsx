@@ -11,7 +11,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post("https://se-placement.onrender.com/register", {
+      const response = await axios.post("http://localhost:3000/register", {
         email,
         password,
       });
