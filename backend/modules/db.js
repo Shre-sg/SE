@@ -9,13 +9,13 @@ const mysql = require('mysql2');
 //     database: 'PLACEMENT', //RV_COLLEGE_PLACEMENT
 // });
 
-// const db = mysql.createConnection({
-//   host: 'mysql-2c83732b-shreyasg-5f50.h.aivencloud.com',
-//   user: 'avnadmin',
-//   password: process.env.PASS,  // Use the environment variable
-//   database: 'PLACEMENT',
-//   port: '21146',
-// });
+const db = mysql.createConnection({
+  host: process.env.HOSt,
+  user: process.env.USER,
+  password: process.env.PASS,  // Use the environment variable
+  database: process.env.DB,
+  port: process.env.PORT,
+});
 
 ////sanjana db
 // const db = mysql.createConnection({
