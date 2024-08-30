@@ -6,6 +6,7 @@ const { promisify } = require('util');
 // Database connection configuration (importing pool from your existing db.js)
 const pool = require('./db');
 
+
 // Function to calculate offer statistics
 async function calculateOfferStatistics() {
     try {
