@@ -9,7 +9,7 @@ const AllData = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get("http://localhost:3000/all");
+                const response = await axios.get("https://se-server-yjpl.onrender.com/all");
                 setData(response.data);
             } catch (err) {
                 setError('Error fetching data');

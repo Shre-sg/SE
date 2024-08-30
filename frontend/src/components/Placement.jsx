@@ -26,7 +26,7 @@ const Placement = () => {
 
     const fetchData = async () => {
         try {
-            const response = await axios.get("http://localhost:3000/placement");
+            const response = await axios.get("https://se-server-yjpl.onrender.com/placement");
             setOriginalData(response.data);
             setJoinedData(response.data);
         } catch (error) {
@@ -66,7 +66,7 @@ const Placement = () => {
             return;
         }
         try {
-            await axios.post("http://localhost:3000/placement", formData);
+            await axios.post("https://se-server-yjpl.onrender.com/placement", formData);
             setDialogOpen(false);
             fetchData();
         } catch (error) {
@@ -110,7 +110,7 @@ const Placement = () => {
         formData.append('file', file);
 
         try {
-            await axios.post("http://localhost:3000/upload/placement", formData, {
+            await axios.post("https://se-server-yjpl.onrender.com/upload/placement", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
