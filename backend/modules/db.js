@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 
-
-=======
-require('dotenv').config();
->>>>>>> bbf24a29e0ad9ca63da5ec45d8e4e2f73c69edc1
 const mysql = require('mysql2');
 
 //shreyas db

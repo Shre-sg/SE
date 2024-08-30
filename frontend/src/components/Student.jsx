@@ -31,7 +31,7 @@ const Student = () => {
 
     const fetchStudents = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/student`);
+            const response = await axios.get("https://se-placement.onrender.com/student");
             const overriddenData = response.data.map(student => ({
                 ...student,
                 Gender: cleanString(student.Gender),
@@ -86,7 +86,7 @@ const Student = () => {
             return;
         }
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/student`, formData);
+            await axios.post("https://se-placement.onrender.com/student", formData);
             setDialogOpen(false);
             fetchStudents();
         } catch (error) {
@@ -141,7 +141,7 @@ const Student = () => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/upload/student`, formData, {
+            const response = await axios.post("https://se-placement.onrender.com/upload/student", formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

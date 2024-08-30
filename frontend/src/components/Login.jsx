@@ -11,7 +11,7 @@ const Login = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/login`, {
+      const response = await axios.post("https://se-placement.onrender.com/login", {
         email,
         password,
       });

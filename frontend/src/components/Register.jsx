@@ -11,7 +11,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/register`, {
+      const response = await axios.post("https://se-placement.onrender.com/register", {
         email,
         password,
       });

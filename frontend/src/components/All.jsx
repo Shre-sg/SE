@@ -9,7 +9,7 @@ const AllData = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/all`);
+                const response = await axios.get("https://se-placement.onrender.com/all");
                 setData(response.data);
             } catch (err) {
                 setError('Error fetching data');
