@@ -10,7 +10,7 @@ const mysql = require('mysql2');
 // });
 
 const db = mysql.createConnection({
-  host: process.env.HOSt,
+  host: process.env.HOST,
   user: process.env.USER,
   password: process.env.PASS,  // Use the environment variable
   database: process.env.DB,
