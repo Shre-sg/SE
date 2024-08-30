@@ -28,7 +28,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 // Middleware setup
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'https://vermillion-donut-761eda.netlify.app', // Replace with your frontend domain
+  }));
 app.use(bodyParser.json());
 app.use(session({
     secret: 'wasssssuppp',

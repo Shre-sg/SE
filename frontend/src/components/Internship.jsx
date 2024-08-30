@@ -23,7 +23,7 @@ const Internship = () => {
 
     const fetchInternships = async () => {
         try {
-            const response = await axios.get('http://localhost:3000/internship');
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/internship`);
             setInternships(response.data);
         } catch (error) {
             console.error('Error fetching internships:', error);
@@ -60,7 +60,7 @@ const Internship = () => {
             return;
         }
         try {
-            await axios.post('http://localhost:3000/internship', formData);
+            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/internship`, formData);
             setDialogOpen(false);
             fetchInternships();
         } catch (error) {
@@ -105,7 +105,7 @@ const Internship = () => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('http://localhost:3000/upload/internship', formData, {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/upload/internship`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

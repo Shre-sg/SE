@@ -19,10 +19,10 @@ const View = () => {
         const fetchData = async () => {
             try {
                 const [campusResponse, ctcResponse, typeResponse, categoryResponse] = await Promise.all([
-                    axios.get('http://localhost:3000/campus'),
-                    axios.get('http://localhost:3000/ctc'),
-                    axios.get('http://localhost:3000/type'),
-                    axios.get('http://localhost:3000/cato'),
+                    axios.get(`${process.env.REACT_APP_BACKEND_URL}/campus`),
+                    axios.get(`${process.env.REACT_APP_BACKEND_URL}/ctc`),
+                    axios.get(`${process.env.REACT_APP_BACKEND_URL}/type`),
+                    axios.get(`${process.env.REACT_APP_BACKEND_URL}/cato`),
                 ]);
 
                 setCampusData(campusResponse.data);
@@ -117,7 +117,7 @@ const View = () => {
     
     const handleDeleteAllData = async () => {
         try {
-            await axios.delete('http://localhost:3000/delete');
+            await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/delete`);
             alert('All data deleted successfully.');
         } catch (error) {
             console.error('Error deleting data:', error);
