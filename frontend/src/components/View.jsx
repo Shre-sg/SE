@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import 'bootswatch/dist/lux/bootstrap.min.css'; // Import Bootswatch Lux theme
+import { useNavigate } from 'react-router-dom'; 
+import 'bootswatch/dist/lux/bootstrap.min.css'; 
 import { Pie, Bar } from 'react-chartjs-2';
 import Chart from 'chart.js/auto';
 import image1 from '../assets/rvce.logo.png';
 import image2 from '../assets/rvce.write.png';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 const View = () => {
     const [campusData, setCampusData] = useState(null);
@@ -13,7 +15,7 @@ const View = () => {
     const [typeData, setTypeData] = useState(null);
     const [categoryData, setCategoryData] = useState(null);
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Initialize useNavigate
+    const navigate = useNavigate(); 
 
     useEffect(() => {
         const fetchData = async () => {
@@ -76,7 +78,6 @@ const View = () => {
         maintainAspectRatio: false,
     };
 
-    // Offer type bar chart data
     const offerTypeBarData = typeData ? {
         labels: ['FTE', 'FTE+Internship', 'FTE+Internship (PBC)', 'Internship'],
         datasets: [{
@@ -95,7 +96,6 @@ const View = () => {
         maintainAspectRatio: false,
     };
 
-    // Category pie chart data
     const categoryPieData = categoryData ? {
         labels: ['Dream', 'Open Dream', 'No PPO'],
         datasets: [{
@@ -109,10 +109,7 @@ const View = () => {
     };
 
     const handleLogout = () => {
-        // Implement your logout logic here
-        // For example, clearing authentication tokens and redirecting to the login page
-        // localStorage.removeItem('authToken');
-        navigate('/login'); // Redirect to login page
+        navigate('/login'); 
     };
     
     const handleDeleteAllData = async () => {
@@ -124,8 +121,44 @@ const View = () => {
             alert('Error deleting data.');
         }
     };
-    
 
+    const downloadPDF = async () => {
+        const pdf = new jsPDF('l', 'mm', 'a4'); // Create a landscape A4 PDF
+    
+        // Function to capture and add a graph to the PDF
+        const addGraphToPDF = async (elementId, title) => {
+            const input = document.getElementById(elementId); // Element to capture
+            if (!input) {
+                console.error(`Element with ID ${elementId} not found`);
+                return;
+            }
+    
+            const canvas = await html2canvas(input, { scale: 5 }); // Increase the scale for better resolution
+            const imgData = canvas.toDataURL('image/png');
+    
+            const imgWidth = 100; // Width of the image
+            const imgHeight = (canvas.height * imgWidth) / canvas.width; // Calculate the height of the image
+    
+            // Add title if needed
+            pdf.text(title, 10, 10); // Title position
+    
+            // Add the image to the PDF
+            pdf.addImage(imgData, 'PNG', 10, 20, imgWidth, imgHeight); // 20 units from the top
+            pdf.addPage(); // Add a new page for the next graph
+        };
+    
+        // Capture and add each graph to the PDF
+        await addGraphToPDF('campus-graph', 'On Campus vs Off Campus');
+        await addGraphToPDF('ctc-graph', 'CTC Statistics');
+        await addGraphToPDF('offer-type-graph', 'Offer Type Statistics');
+        await addGraphToPDF('category-graph', 'Category Statistics');
+    
+        // Remove the last page since it's empty
+        pdf.deletePage(pdf.internal.getNumberOfPages());
+    
+        pdf.save('graphs.pdf'); // Save the PDF
+    };
+    
     return (
         <div className="container mt-5">
             <div style={{ position: 'absolute', top: '15px', left: '15px', margin: '10px' }}>
@@ -139,6 +172,7 @@ const View = () => {
                 <h1 style={{ marginTop: '170px' }}>Placement Portal</h1>
             </div>
             <div className="d-flex justify-content-between mb-4" style={{ marginTop: '20px' }}>
+                <button className="btn btn-warning" onClick={handleLogout}>Logout</button>
                 <button className="btn btn-success" onClick={() => navigate('/student')}>Student Data</button>
                 <button className="btn btn-primary" onClick={() => navigate('/internship')}>Internship Data</button>
                 <button className="btn btn-success" onClick={() => navigate('/placement')}>Placement Data</button>
@@ -152,7 +186,7 @@ const View = () => {
                 <h2 style={{ marginTop: '30px' }}>On Campus vs Off Campus</h2>
             </div>
             {campusData ? (
-                <>
+                <div id="pdf-content"> {/* Single Div to capture for PDF */}
                     <table className="table table-bordered table-striped" style={tableStyle}>
                         <thead className="thead-dark">
                             <tr>
@@ -176,146 +210,128 @@ const View = () => {
                         </tbody>
                     </table>
                     {pieData && (
-                        <div style={{ width: '340px', height: '340px', margin: 'auto' }}>
+                        <div id="campus-graph" style={{ width: '340px', height: '340px', margin: 'auto' }}>
                             <Pie data={pieData} options={pieOptions} />
                         </div>
                     )}
-                </>
-            ) : <p>Loading...</p>}
-
-            <div>
-                <hr className="my-4" />
-            </div>
-            <div className="text-center">
-                <h2 style={{ marginTop: '40px' }}>CTC Statistics</h2>
-            </div>
-            {ctcData ? (
-                <>
-                    <table className="table table-bordered table-striped" style={tableStyle}>
-                        <thead className="thead-dark">
-                            <tr>
-                                <th>CTC Metric</th>
-                                <th>Value (in lakhs)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>MAX CTC</td>
-                                <td>{ctcData['MAX of CTC (in lakhs)']}</td>
-                            </tr>
-                            <tr>
-                                <td>Average CTC</td>
-                                <td>{ctcData['Average CTC (in lakhs)']}</td>
-                            </tr>
-                            <tr>
-                                <td>Median CTC</td>
-                                <td>{ctcData['Median CTC (in lakhs)']}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    {barData && (
-                        <div style={{ width: '400px', height: '400px', margin: 'auto' }}>
-                            <Bar data={barData} options={barOptions} />
-                        </div>
+                    <div>
+                        <hr className="my-4" />
+                    </div>
+                    <div className="text-center">
+                        <h2>CTC Statistics</h2>
+                    </div>
+                    {ctcData && (
+                        <>
+                            <table className="table table-bordered table-striped" style={tableStyle}>
+                                <thead className="thead-dark">
+                                    <tr>
+                                        <th>CTC Metric</th>
+                                        <th>Value (in lakhs)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>MAX of CTC</td>
+                                        <td>{ctcData['MAX of CTC (in lakhs)']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Average CTC</td>
+                                        <td>{ctcData['Average CTC (in lakhs)']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Median CTC</td>
+                                        <td>{ctcData['Median CTC (in lakhs)']}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div id="ctc-graph" style={{ width: '340px', height: '340px', margin: 'auto' }}>
+                                <Bar data={barData} options={barOptions} />
+                            </div>
+                        </>
                     )}
-                </>
-            ) : <p>Loading...</p>}
-
-            <div>
-                <hr className="my-4" />
-            </div>
-            <div className="text-center">
-                <h2 style={{ marginTop: '40px' }}>Offer Type Counts</h2>
-            </div>
-            
-            {typeData ? (
-                <>
-                    <table className="table table-bordered table-striped" style={tableStyle}>
-                        <thead className="thead-dark">
-                            <tr>
-                                <th>Offer Type</th>
-                                <th>Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>FTE</td>
-                                <td>{typeData.FTE}</td>
-                            </tr>
-                            <tr>
-                                <td>FTE+Internship</td>
-                                <td>{typeData['FTE+Internship']}</td>
-                            </tr>
-                            <tr>
-                                <td>FTE+Internship (PBC)</td>
-                                <td>{typeData['FTE+Internship (PBC)']}</td>
-                            </tr>
-                            <tr>
-                                <td>Internship</td>
-                                <td>{typeData.Internship}</td>
-                            </tr>
-                            <tr>
-                                <td>Grand Total</td>
-                                <td>{typeData['Grand Total']}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    {offerTypeBarData && (
-                        <div style={{ width: '400px', height: '400px', margin: 'auto' }}>
-                            <Bar data={offerTypeBarData} options={offerTypeBarOptions} />
-                        </div>
+                    <div>
+                        <hr className="my-4" />
+                    </div>
+                    <div className="text-center">
+                        <h2>Offer Type Statistics</h2>
+                    </div>
+                    {typeData && (
+                        <>
+                            <table className="table table-bordered table-striped" style={tableStyle}>
+                                <thead className="thead-dark">
+                                    <tr>
+                                        <th>Offer Type</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>FTE</td>
+                                        <td>{typeData.FTE}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>FTE+Internship</td>
+                                        <td>{typeData['FTE+Internship']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>FTE+Internship (PBC)</td>
+                                        <td>{typeData['FTE+Internship (PBC)']}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Internship</td>
+                                        <td>{typeData.Internship}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div id="offer-type-graph" style={{ width: '340px', height: '340px', margin: 'auto' }}>
+                                <Bar data={offerTypeBarData} options={offerTypeBarOptions} />
+                            </div>
+                        </>
                     )}
-                </>
-            ) : <p>Loading...</p>}
-
-            <div>
-                <hr className="my-4" />
-            </div>
-            <div className="text-center">
-                <h2 style={{ marginTop: '40px' }}>Category Counts</h2>
-            </div>
-            {categoryData ? (
-                <>
-                    <table className="table table-bordered table-striped" style={tableStyle}>
-                        <thead className="thead-dark">
-                            <tr>
-                                <th>Category</th>
-                                <th>Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Dream</td>
-                                <td>{categoryData.Dream}</td>
-                            </tr>
-                            <tr>
-                                <td>Open Dream</td>
-                                <td>{categoryData.Open_Dream}</td>
-                            </tr>
-                            <tr>
-                                <td>No PPO</td>
-                                <td>{categoryData.No_PPO}</td>
-                            </tr>
-                            <tr>
-                                <td>Grand Total</td>
-                                <td>{categoryData.Grand_Total}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    {categoryPieData && (
-                        <div style={{ width: '340px', height: '340px', margin: 'auto' }}>
-                            <Pie data={categoryPieData} options={categoryPieOptions} />
-                        </div>
+                    <div>
+                        <hr className="my-4" />
+                    </div>
+                    <div className="text-center">
+                        <h2>Category Statistics</h2>
+                    </div>
+                    {categoryData && (
+                        <>
+                            <table className="table table-bordered table-striped" style={tableStyle}>
+                                <thead className="thead-dark">
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Dream</td>
+                                        <td>{categoryData.Dream}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Open Dream</td>
+                                        <td>{categoryData.Open_Dream}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>No PPO</td>
+                                        <td>{categoryData.No_PPO}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div id="category-graph" style={{ width: '340px', height: '340px', margin: 'auto' }}>
+                                <Pie data={categoryPieData} options={categoryPieOptions} />
+                            </div>
+                        </>
                     )}
-                </>
-            ) : <p>Loading...</p>}
-
-                <div className="d-flex justify-content-between mb-4" style={{ marginTop: '40px' }}>
-                    <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-                    <button className="btn btn-primary" onClick={() => navigate('/all')}>Data Page</button>
-                    <button className="btn btn-warning" onClick={handleDeleteAllData}>Delete All Data</button> {/* New button */}
                 </div>
-
+            ) : (
+                <div>Loading data...</div>
+            )}
+            <div className="d-flex justify-content-between mt-5">
+                <button className="btn btn-danger" onClick={handleDeleteAllData}>Delete All Data</button>
+                <button className="btn btn-primary" onClick={downloadPDF}>Download PDF</button>
+                <button className="btn btn-primary" onClick={() => navigate('/all')}>Data Page</button>
+            </div>
         </div>
     );
 };
